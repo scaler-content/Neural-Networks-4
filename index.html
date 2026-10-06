@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neural Network 4 post read</title>
+<style>
+  :root{
+    --red-950:#3f0a0a; --red-800:#8d1c1c; --red-700:#a82323; --red-600:#c62e2e; --red-500:#dc4444;
+    --red-100:#fbe2e0; --red-50:#fdf2f1;
+    --yellow-700:#9a6b06; --yellow-600:#b9870b; --yellow-500:#d9a61e; --yellow-400:#e8c23f; --yellow-300:#f1d873;
+    --yellow-100:#faf0cc; --yellow-50:#fdf8e9;
+    --ink:#241407; --muted:#6e5a44; --paper:#fffdf8; --surface:#ffffff; --border:#ecdfc0;
+    --code-bg:#231407; --code-text:#f1d873; --code-muted:#c9b48a;
+    --shadow: 0 1px 2px rgba(63,10,10,0.06), 0 8px 24px -12px rgba(63,10,10,0.18);
+    --radius: 14px; --maxw: 880px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0; background:var(--paper); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; line-height:1.65; font-size:17px; -webkit-font-smoothing:antialiased;}
+  h1,h2,h3,h4{font-family:Georgia,"Times New Roman",serif; color:var(--red-950); line-height:1.22; letter-spacing:-0.01em;}
+  h1{font-size:2.5rem; margin:0 0 .3em;}
+  h2{font-size:1.8rem; margin:2.6em 0 .6em; border-top:3px solid var(--yellow-400); padding-top:.6em;}
+  h3{font-size:1.3rem; margin:1.6em 0 .5em; color:var(--red-800);}
+  h4{font-size:1.05rem; margin:1.2em 0 .4em; color:var(--red-700);}
+  p{margin:0 0 1em;}
+  a{color:var(--red-700);}
+  ul,ol{padding-left:1.3em;}
+  li{margin-bottom:.4em;}
+  code{font-family:"SF Mono",Consolas,"Liberation Mono",Menlo,monospace; background:var(--yellow-100); color:var(--red-800); padding:.1em .35em; border-radius:4px; font-size:.88em;}
+  .container{max-width:var(--maxw); margin:0 auto; padding:0 24px;}
+  .progress-bar{position:fixed; top:0; left:0; height:4px; background:linear-gradient(90deg,var(--red-600),var(--yellow-500)); width:0%; z-index:999; transition:width .1s;}
+  header.site-head{position:sticky; top:0; z-index:50; background:rgba(255,253,248,0.92); backdrop-filter:blur(6px); border-bottom:1px solid var(--border); padding:12px 0;}
+  .site-head .container{display:flex; align-items:center; justify-content:space-between; gap:12px;}
+  .brand{font-weight:700; font-size:.95rem; color:var(--red-800); display:flex; align-items:center; gap:8px;}
+  .brand .dot{width:10px; height:10px; border-radius:50%; background:var(--yellow-500); box-shadow:0 0 0 3px var(--red-100);}
+  .toc-btn{background:var(--red-700); color:#fff; border:none; border-radius:8px; padding:8px 14px; font-size:.85rem; font-weight:600; cursor:pointer;}
+  .toc-btn:hover{background:var(--red-800);}
+  .toc-panel{display:none; position:absolute; right:24px; top:56px; background:var(--surface); border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow); padding:14px; width:260px; max-height:70vh; overflow:auto;}
+  .toc-panel.open{display:block;}
+  .toc-panel a{display:block; padding:7px 8px; border-radius:6px; color:var(--ink); text-decoration:none; font-size:.9rem;}
+  .toc-panel a:hover{background:var(--yellow-50); color:var(--red-700);}
+  .hero{padding:56px 0 20px;}
+  .kicker{display:inline-block; font-size:.78rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--red-700); background:var(--red-50); border:1px solid var(--red-100); padding:5px 12px; border-radius:999px; margin-bottom:16px;}
+  .hero p.lead{font-size:1.18rem; color:var(--muted); max-width:66ch;}
+  .obj-card{background:var(--surface); border:1px solid var(--border); border-left:5px solid var(--yellow-500); border-radius:var(--radius); padding:22px 24px; margin-top:28px; box-shadow:var(--shadow);}
+  .obj-card h4{margin-top:0; color:var(--red-800); font-size:.95rem; text-transform:uppercase; letter-spacing:.05em;}
+  .obj-card ol{margin:0; padding-left:1.3em;}
+  main{padding-bottom:60px;}
+  .callout{border-radius:var(--radius); padding:18px 22px; margin:1.4em 0; border:1px solid var(--border); background:var(--surface); box-shadow:var(--shadow);}
+  .callout .tag{display:inline-flex; align-items:center; gap:6px; font-size:.72rem; font-weight:800; text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px; padding:3px 10px; border-radius:999px;}
+  .callout.misconception{border-left:5px solid var(--red-600); background:var(--red-50);}
+  .callout.misconception .tag{background:var(--red-600); color:#fff;}
+  .callout.industry{border-left:5px solid var(--yellow-500); background:var(--yellow-50);}
+  .callout.industry .tag{background:var(--yellow-600); color:#fff;}
+  .callout.surprise{border-left:5px solid var(--red-800); background:#fff;}
+  .callout.surprise .tag{background:var(--red-800); color:#fff;}
+  .callout.deeper{border:1px dashed var(--red-500); background:#fff;}
+  .callout.deeper .tag{background:var(--ink); color:var(--yellow-300);}
+  .callout p:last-child{margin-bottom:0;}
+  .interview{border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin:1.4em 0; background:var(--surface); box-shadow:var(--shadow);}
+  .interview .q{padding:16px 20px; font-weight:700; color:var(--red-900); cursor:pointer; display:flex; justify-content:space-between; align-items:center; gap:10px; background:linear-gradient(0deg,var(--yellow-50),#fff);}
+  .interview .q::after{content:"+"; font-size:1.4rem; color:var(--red-600); font-weight:400; flex-shrink:0;}
+  .interview.open .q::after{content:"–";}
+  .interview .a{max-height:0; overflow:hidden; transition:max-height .25s ease;}
+  .interview.open .a{max-height:600px;}
+  .interview .a-inner{padding:4px 20px 18px;}
+  .interview .a-inner .weak{color:var(--muted); font-size:.92rem; margin-bottom:8px;}
+  .interview .a-inner .strong{background:var(--yellow-50); border-left:4px solid var(--yellow-500); padding:10px 14px; border-radius:8px;}
+  .code-block{background:var(--code-bg); color:var(--code-text); border-radius:12px; padding:18px 20px; overflow-x:auto; font-family:"SF Mono",Consolas,"Liberation Mono",Menlo,monospace; font-size:.85rem; margin:1em 0; box-shadow:var(--shadow); line-height:1.55;}
+  .code-block .c{color:var(--code-muted); font-style:italic;}
+  .output-block{background:#fffef5; border:1px solid var(--yellow-300); border-radius:10px; padding:14px 18px; font-family:"SF Mono",Consolas,monospace; font-size:.83rem; color:var(--red-900); margin:.6em 0 1.2em; overflow-x:auto; white-space:pre;}
+  .output-block::before{content:"OUTPUT"; display:block; font-family:-apple-system,sans-serif; font-size:.65rem; font-weight:800; letter-spacing:.08em; color:var(--yellow-700); margin-bottom:6px;}
+  table{width:100%; border-collapse:collapse; margin:1.2em 0; font-size:.93rem;}
+  th,td{text-align:left; padding:10px 14px; border-bottom:1px solid var(--border);}
+  th{background:var(--red-800); color:#fff; font-weight:600; font-size:.82rem; text-transform:uppercase; letter-spacing:.04em;}
+  tr:nth-child(even) td{background:var(--yellow-50);}
+  .quiz{background:linear-gradient(145deg,var(--red-950),var(--red-800)); color:#fff; border-radius:18px; padding:28px 26px; margin:2.2em 0; box-shadow:var(--shadow);}
+  .quiz .quiz-kicker{font-size:.75rem; font-weight:800; text-transform:uppercase; letter-spacing:.08em; color:var(--yellow-300); margin-bottom:10px;}
+  .quiz h4{color:#fff; font-size:1.15rem; margin:0 0 16px;}
+  .quiz-options{display:flex; flex-direction:column; gap:10px;}
+  .quiz-opt{background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.22); color:#fff; text-align:left; padding:12px 16px; border-radius:10px; cursor:pointer; font-size:.95rem; transition:.15s; font-family:inherit;}
+  .quiz-opt:hover{background:rgba(255,255,255,0.16);}
+  .quiz-opt.correct{background:var(--yellow-500); border-color:var(--yellow-500); color:var(--red-950); font-weight:700;}
+  .quiz-opt.incorrect{background:rgba(220,68,68,0.5); border-color:var(--red-500);}
+  .quiz-opt:disabled{cursor:default;}
+  .quiz-explain{margin-top:16px; background:rgba(255,255,255,0.1); border-left:4px solid var(--yellow-400); padding:14px 16px; border-radius:8px; font-size:.92rem; display:none;}
+  .quiz-explain.show{display:block;}
+  .chart-wrap{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:22px 24px; margin:1.6em 0; box-shadow:var(--shadow);}
+  .chart-title{font-weight:700; color:var(--red-900); margin-bottom:4px; font-size:1.02rem;}
+  .chart-sub{color:var(--muted); font-size:.85rem; margin-bottom:14px;}
+  svg text{font-family:-apple-system,sans-serif;}
+  .bar-label{font-size:12px; fill:var(--ink);}
+  .bar-value{font-size:12px; font-weight:700; fill:var(--red-900);}
+  .axis-line{stroke:var(--border); stroke-width:1;}
+  .toggle-row{display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;}
+  .toggle-btn{background:var(--yellow-50); border:1.5px solid var(--yellow-400); color:var(--red-800); font-weight:700; padding:8px 16px; border-radius:999px; cursor:pointer; font-size:.85rem; transition:.15s; font-family:inherit;}
+  .toggle-btn.active{background:var(--red-700); border-color:var(--red-700); color:#fff;}
+  .takeaway-list{list-style:none; padding:0; margin:1.4em 0;}
+  .takeaway-list li{background:var(--surface); border:1px solid var(--border); border-left:5px solid var(--red-600); border-radius:10px; padding:12px 16px; margin-bottom:10px; box-shadow:var(--shadow);}
+  .takeaway-list li b{color:var(--red-800);}
+  footer{text-align:center; padding:40px 24px 50px; color:var(--muted); font-size:.85rem; border-top:1px solid var(--border); margin-top:40px;}
+  footer .foot-title{font-family:Georgia,serif; color:var(--red-900); font-size:1rem; font-weight:700; margin-bottom:4px;}
+  .divider{height:1px; background:linear-gradient(90deg,transparent,var(--yellow-400),transparent); margin:2.6em 0;}
+  .skip-link{position:absolute; left:-9999px; top:0; background:var(--red-800); color:#fff; padding:10px 16px; border-radius:6px; z-index:1000;}
+  .skip-link:focus{left:16px; top:16px;}
+  button:focus-visible, a:focus-visible{outline:3px solid var(--red-500); outline-offset:2px;}
+
+  /* pipeline diagram */
+  .pipeline{display:flex; align-items:center; gap:4px; flex-wrap:wrap; margin:1.6em 0; justify-content:center;}
+  .pstep{background:var(--surface); border:2px solid var(--yellow-500); border-radius:12px; padding:14px 16px; text-align:center; min-width:120px; box-shadow:var(--shadow);}
+  .pstep .pt{font-size:.7rem; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); font-weight:700;}
+  .pstep .pv{font-family:"SF Mono",Consolas,monospace; font-weight:700; color:var(--red-800); margin-top:4px; font-size:.95rem;}
+  .parr{color:var(--red-600); font-size:1.4rem; flex-shrink:0;}
+  @media(max-width:700px){.pipeline{flex-direction:column;} .parr{transform:rotate(90deg);}}
+
+  /* compare code columns */
+  .code-compare{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:1.2em 0;}
+  @media(max-width:700px){.code-compare{grid-template-columns:1fr;}}
+  .code-compare .cc-label{font-size:.75rem; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin-bottom:6px;}
+
+  /* mini multi charts */
+  .mini-charts{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin:1.4em 0;}
+  @media(max-width:760px){.mini-charts{grid-template-columns:1fr;}}
+  .mini-chart{background:#fff; border:1px solid var(--border); border-radius:12px; padding:14px; box-shadow:var(--shadow);}
+  .mini-chart h5{margin:0 0 2px; font-size:.88rem; color:var(--red-800);}
+  .mini-chart .mc-note{font-size:.76rem; color:var(--muted); margin-bottom:8px;}
+
+  .model-arch{background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:18px; margin:1.2em 0; box-shadow:var(--shadow);}
+  .arch-layer{display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:8px; margin-bottom:6px; font-family:"SF Mono",Consolas,monospace; font-size:.85rem;}
+  .arch-layer .shape-tag{margin-left:auto; color:var(--muted); font-size:.78rem;}
+
+  .skip-score{text-align:center; background:var(--yellow-50); border-radius:10px; padding:16px 8px;}
+  .skip-score .label{font-size:.78rem; color:var(--muted); font-weight:700; text-transform:uppercase;}
+  .skip-score .val{font-size:1.6rem; font-weight:800; color:var(--red-800); margin-top:6px;}
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to content</a>
+<div class="progress-bar" id="progressBar"></div>
+
+<header class="site-head">
+  <div class="container">
+    <div class="brand"><span class="dot"></span> Neural Network 4 post read</div>
+    <div style="position:relative;">
+      <button class="toc-btn" id="tocBtn" aria-expanded="false" aria-controls="tocPanel">Contents</button>
+      <nav class="toc-panel" id="tocPanel">
+        <a href="#devices">Devices &amp; Speed</a>
+        <a href="#capstone">Training Loop by Hand</a>
+        <a href="#framework">The Framework Automates It</a>
+        <a href="#text">From Text to Tensors</a>
+        <a href="#pooling">Flatten vs. Pooling</a>
+        <a href="#recap">Recap</a>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <div class="container">
+    <section class="hero">
+      <span class="kicker">Thinking in Tensors · Part 2</span>
+      <h1>Devices, the Training Loop, and Automating It</h1>
+      <p class="lead">The fourth passport — device — decides where computation physically happens, and "somewhere" has real performance consequences most people get wrong the first time they benchmark it. From there: a full training loop written by hand, broken three ways on purpose, then automated with PyTorch's own framework tools to build a real text classifier.</p>
+      <div class="obj-card">
+        <h4>By the end of this read, you'll be able to</h4>
+        <ol>
+          <li>Move data across devices, diagnose device errors, and benchmark GPU code correctly.</li>
+          <li>Hand-write a training step and debug it using the four-passports checklist.</li>
+          <li>Assemble a full PyTorch pipeline — a data loader, a module, a loss function, an optimizer — as the automated version of the hand-written loop.</li>
+          <li>Build a text classifier (embedding → pooling or flatten → linear) and explain the parameter trade-off between the two.</li>
+        </ol>
+      </div>
+    </section>
+
+    <section id="devices">
+      <h2>Devices and Speed</h2>
+      <p>A layer can be built, shape bugs caught, memory managed, gradients trusted — but all of that computation has to physically happen <em>somewhere</em>. PyTorch never moves tensors across devices automatically; it's always explicit.</p>
+      <div class="code-block">x_cpu = torch.tensor([1.0, 2.0, 3.0])
+x_on_device = x_cpu.to(device)</div>
+      <div class="output-block">default device for a new tensor: cpu
+after .to('cpu'): cpu</div>
+
+      <div class="callout misconception">
+        <span class="tag">What actually happens</span>
+        <p>Moving a model to GPU with <code>model.to('cuda')</code> but forgetting to move the input batch produces a <code>RuntimeError</code> about tensors on different devices — the same passport failure met earlier, in its most common real-world form.</p>
+      </div>
+
+      <h3>"GPU is always faster" is a half-truth</h3>
+      <p>GPUs win on large parallel workloads, but for <em>tiny</em> tensors, the overhead of launching work on the GPU can cost more than the computation itself. Timing matrix multiplication across sizes shows the pattern clearly:</p>
+
+      <div class="chart-wrap">
+        <div class="chart-title">Matmul latency vs. matrix size</div>
+        <div class="chart-sub">Log–log scale. On a GPU runtime, small matrices are often <em>slower</em> on GPU than CPU — launch overhead dominates — until size grows large enough that raw parallel throughput wins.</div>
+        <svg viewBox="0 0 580 230" style="width:100%; display:block;" role="img" aria-label="Line chart of matmul time in milliseconds versus matrix size, log-log scale: n=32 takes 0.0093ms, n=128 takes 0.1262ms, n=256 takes 2.5039ms, n=512 takes 10.9536ms, n=1024 takes 44.7099ms, n=2048 takes 472.8538ms.">
+          <g transform="translate(60,20)">
+            <!-- gridlines -->
+            <line x1="0" y1="0" x2="0" y2="170" class="axis-line"/>
+            <line x1="0" y1="170" x2="460" y2="170" class="axis-line"/>
+            <polyline points="0,184.27 153.3,145.77 230,101.65 306.7,79.85 383.3,59.1 460,24.26" fill="none" stroke="#c62e2e" stroke-width="2.5"/>
+            <g>
+              <circle cx="0" cy="184.27" r="4.5" fill="#d9a61e"/>
+              <circle cx="153.3" cy="145.77" r="4.5" fill="#d9a61e"/>
+              <circle cx="230" cy="101.65" r="4.5" fill="#d9a61e"/>
+              <circle cx="306.7" cy="79.85" r="4.5" fill="#d9a61e"/>
+              <circle cx="383.3" cy="59.1" r="4.5" fill="#d9a61e"/>
+              <circle cx="460" cy="24.26" r="4.5" fill="#d9a61e"/>
+            </g>
+            <text x="0" y="200" text-anchor="middle" class="bar-label">32</text>
+            <text x="153.3" y="200" text-anchor="middle" class="bar-label">128</text>
+            <text x="230" y="200" text-anchor="middle" class="bar-label">256</text>
+            <text x="306.7" y="200" text-anchor="middle" class="bar-label">512</text>
+            <text x="383.3" y="200" text-anchor="middle" class="bar-label">1024</text>
+            <text x="460" y="200" text-anchor="middle" class="bar-label">2048</text>
+            <text x="0" y="178" text-anchor="start" class="bar-value" dy="-8">0.0093ms</text>
+            <text x="153.3" y="140" text-anchor="middle" class="bar-value" dy="-6">0.126ms</text>
+            <text x="230" y="96" text-anchor="middle" class="bar-value" dy="-6">2.50ms</text>
+            <text x="306.7" y="74" text-anchor="middle" class="bar-value" dy="-6">10.95ms</text>
+            <text x="383.3" y="54" text-anchor="middle" class="bar-value" dy="-6">44.71ms</text>
+            <text x="460" y="19" text-anchor="end" class="bar-value" dy="0">472.85ms</text>
+          </g>
+          <text x="290" y="222" text-anchor="middle" font-size="11" fill="#6e5a44" font-weight="600">matrix size (n × n)</text>
+        </svg>
+      </div>
+
+      <h3>The naive timing bug</h3>
+      <p>GPU kernel launches are <strong>asynchronous</strong> — a Python call returns control immediately while the GPU keeps working in the background. Timing without a synchronize call measures only the launch, not the computation:</p>
+      <div class="code-block">start = time.perf_counter()
+c = a @ b                       <span class="c"># GPU kernel launch returns almost immediately</span>
+elapsed_naive = time.perf_counter() - start</div>
+      <div class="output-block">naive (no sync) elapsed: 279.8976 ms
+On a GPU, this measures only the LAUNCH time, not the actual computation --
+the real work is still running in the background when the timer stops.</div>
+      <p>Without <code>torch.cuda.synchronize()</code> before stopping the clock, the measurement is "how long it took to queue the work," not "how long the work took." This single missing line is behind a large fraction of misleading GPU benchmarks online.</p>
+
+      <div class="interview">
+        <div class="q">Interview question: a teammate claims their GPU code runs a matmul in 0.01ms. What's the first thing to check?</div>
+        <div class="a"><div class="a-inner">
+          <div class="strong"><b>Strong answer:</b> Whether <code>torch.cuda.synchronize()</code> was called before stopping the timer, and whether a warm-up run preceded timing — both are required for an honest GPU benchmark.</div>
+        </div></div>
+      </div>
+
+      <h3><code>torch.compile()</code>, briefly</h3>
+      <p>Wrapping a function in <code>torch.compile()</code> traces it and fuses operations into optimized kernels, which can meaningfully speed up code that runs the <em>same shapes</em> repeatedly — like a training loop. It costs compilation time on the first call, so it pays off for code that runs many times, not a one-off script.</p>
+      <div class="chart-wrap">
+        <div class="chart-title">Eager vs. compiled execution, same function</div>
+        <svg viewBox="0 0 400 140" style="width:100%; max-width:400px; display:block;" role="img" aria-label="Bar chart: eager execution takes 156.10 ms, compiled execution takes 142.61 ms.">
+          <g font-size="12">
+            <text x="90" y="34" text-anchor="end" class="bar-label">eager</text>
+            <rect x="100" y="20" width="260" height="28" rx="5" fill="#dc4444"/>
+            <text x="370" y="39" class="bar-value">156.10 ms</text>
+            <text x="90" y="84" text-anchor="end" class="bar-label">compiled</text>
+            <rect x="100" y="70" width="238" height="28" rx="5" fill="#d9a61e"/>
+            <text x="348" y="89" class="bar-value">142.61 ms</text>
+          </g>
+        </svg>
+      </div>
+      <div class="callout industry">
+        <span class="tag">In practice</span>
+        <p>GPU cost is billed by the hour whether it's fully utilized or not. A team running small-batch inference on an oversized GPU, or forgetting <code>synchronize()</code> in benchmarks, routinely ends up making wrong hardware decisions — over-provisioning for a workload a cheaper GPU, or even CPU, would have served just as fast.</p>
+      </div>
+    </section>
+
+    <div class="quiz" id="quiz1">
+      <div class="quiz-kicker">Check your understanding</div>
+      <h4>A teammate times a GPU matmul with no warm-up and no <code>torch.cuda.synchronize()</code>. The reported time is suspiciously tiny. Why?</h4>
+      <div class="quiz-options">
+        <button class="quiz-opt">perf_counter() doesn't have enough resolution for fast GPU operations</button>
+        <button class="quiz-opt">The matmul really was that fast — GPUs parallelize perfectly at any size</button>
+        <button class="quiz-opt" data-correct="true">GPU kernel launches are asynchronous, so the Python call returns before the GPU finishes</button>
+        <button class="quiz-opt">Warm-up only affects correctness, not timing accuracy</button>
+      </div>
+      <div class="quiz-explain">GPU operations queue asynchronously: the Python call returns as soon as work is <em>launched</em>, not when it's <em>finished</em>. Without <code>torch.cuda.synchronize()</code>, the timer stops while the GPU is still computing, so the measured time reflects only launch overhead — a number that looks plausible precisely because it's wrong in a consistent direction.</div>
+    </div>
+
+    <section id="capstone">
+      <h2>Capstone: a Training Loop by Hand</h2>
+      <p>All four passports can now be checked: shape, dtype, device, grad. The task — fit <code>y = w·x + b</code> to noisy data, recovering <code>w ≈ 3</code> and <code>b ≈ 2</code>, using nothing but tensors and autograd. No <code>nn.Module</code>, no <code>torch.optim</code>. This is the engine those tools will later wrap.</p>
+
+      <div class="code-block">for epoch in range(epochs):
+    y_pred = w * x + b                       <span class="c"># forward pass</span>
+    loss = ((y_pred - y) ** 2).mean()         <span class="c"># MSE loss</span>
+    loss.backward()                           <span class="c"># fills w.grad, b.grad</span>
+    with torch.no_grad():                     <span class="c"># update must NOT be tracked</span>
+        w -= lr * w.grad
+        b -= lr * b.grad
+        w.grad.zero_(); b.grad.zero_()        <span class="c"># reset -- remember accumulation!</span></div>
+
+      <div class="chart-wrap">
+        <div class="chart-title">Loss over 200 epochs (sampled)</div>
+        <div class="chart-sub">Log scale. The loop converges to <b>w = 3.000</b> (true 3.0) and <b>b = 1.983</b> (true 2.0).</div>
+        <svg viewBox="0 0 440 160" style="width:100%; max-width:440px; display:block;" role="img" aria-label="Loss decays from 80.8453 at epoch 0 to 0.2637 at epoch 199.">
+          <g transform="translate(30,10)">
+            <line x1="0" y1="0" x2="0" y2="140" class="axis-line"/>
+            <line x1="0" y1="140" x2="380" y2="140" class="axis-line"/>
+            <polyline points="0,12.3 76.4,104.3 152.8,124.05 229.1,131.78 305.5,133.71 380,134.11" fill="none" stroke="#a82323" stroke-width="2.5"/>
+            <circle cx="0" cy="12.3" r="4" fill="#d9a61e"/>
+            <circle cx="76.4" cy="104.3" r="4" fill="#d9a61e"/>
+            <circle cx="152.8" cy="124.05" r="4" fill="#d9a61e"/>
+            <circle cx="229.1" cy="131.78" r="4" fill="#d9a61e"/>
+            <circle cx="305.5" cy="133.71" r="4" fill="#d9a61e"/>
+            <circle cx="380" cy="134.11" r="4" fill="#d9a61e"/>
+            <text x="0" y="8" class="bar-value">80.85</text>
+            <text x="76.4" y="100" class="bar-value">1.07</text>
+            <text x="380" y="130" text-anchor="end" class="bar-value">0.264</text>
+            <text x="0" y="155" text-anchor="middle" class="bar-label">0</text>
+            <text x="76.4" y="155" text-anchor="middle" class="bar-label">40</text>
+            <text x="152.8" y="155" text-anchor="middle" class="bar-label">80</text>
+            <text x="229.1" y="155" text-anchor="middle" class="bar-label">120</text>
+            <text x="305.5" y="155" text-anchor="middle" class="bar-label">160</text>
+            <text x="380" y="155" text-anchor="middle" class="bar-label">199</text>
+          </g>
+        </svg>
+      </div>
+
+      <div class="callout deeper">
+        <span class="tag">Reading the loop by passport</span>
+        <p><code>y_pred = w * x + b</code> is a <b>shape</b> check — scalar times <code>(N,)</code> plus scalar broadcasts cleanly to <code>(N,)</code>, matching <code>y</code>. <code>loss.backward()</code> is a <b>grad</b> check — it only works because <code>w, b</code> have <code>requires_grad=True</code>. <code>with torch.no_grad(): w -= ...</code> is grad again — the update itself must not be tracked. <code>w.grad.zero_()</code> matters because, without it, the next iteration's gradient accumulates onto this one.</p>
+      </div>
+
+      <h3>Breaking it on purpose</h3>
+      <p>Three bugs, each violating exactly one thing — compare their actual, measured behavior:</p>
+
+      <div class="mini-charts">
+        <div class="mini-chart">
+          <h5>Correct loop</h5>
+          <div class="mc-note">200 epochs, converges cleanly</div>
+          <svg viewBox="0 0 170 90" style="width:100%;">
+            <polyline points="2,10 34,45 68,55 102,58.5 136,59.3 168,59.5" fill="none" stroke="#8d1c1c" stroke-width="2.2"/>
+            <circle cx="2" cy="10" r="2.6" fill="#d9a61e"/><circle cx="168" cy="59.5" r="2.6" fill="#d9a61e"/>
+          </svg>
+          <div style="font-size:.78rem; color:var(--muted);">80.85 → 0.264</div>
+        </div>
+        <div class="mini-chart">
+          <h5>Bug A — no zero_grad()</h5>
+          <div class="mc-note">Gradients accumulate; step size keeps growing</div>
+          <svg viewBox="0 0 170 90" style="width:100%;">
+            <polyline points="2,13 44,30 86,45 128,62.6 168,88.5" fill="none" stroke="#c62e2e" stroke-width="2.2" stroke-dasharray="5,3"/>
+            <circle cx="2" cy="13" r="2.6" fill="#d9a61e"/><circle cx="168" cy="88.5" r="2.6" fill="#d9a61e"/>
+          </svg>
+          <div style="font-size:.78rem; color:var(--muted);">80.85 → 28.73 (40 epochs, far from converged)</div>
+        </div>
+        <div class="mini-chart">
+          <h5>Bug B — learning rate 0.5</h5>
+          <div class="mc-note">Each update overshoots; loss explodes</div>
+          <svg viewBox="0 0 170 90" style="width:100%;">
+            <polyline points="2,0.11 78,25.6 154,51.5 168,53" fill="none" stroke="#dc4444" stroke-width="2.2"/>
+            <circle cx="2" cy="0.11" r="2.6" fill="#d9a61e"/><circle cx="168" cy="53" r="2.6" fill="#d9a61e"/>
+          </svg>
+          <div style="font-size:.78rem; color:var(--muted);">80.85 → 4.3×10¹⁰ (6 epochs)</div>
+        </div>
+      </div>
+
+      <table>
+        <thead><tr><th>Bug</th><th>What's violated</th><th>Symptom</th></tr></thead>
+        <tbody>
+          <tr><td>A — missing <code>zero_grad()</code></td><td>Grad passport</td><td>Loss every 8 epochs: 80.85, 69.22, 58.88, 46.65, 28.73 — slow, oscillation-prone descent, not a clean crash</td></tr>
+          <tr><td>B — learning rate 0.5</td><td>Not a passport bug — a hyperparameter</td><td>80.85 → 4,305.8 → 242,290 → 13.6M → 767M → 43.2 billion in six epochs</td></tr>
+          <tr><td>C — update outside <code>no_grad()</code></td><td>Grad passport</td><td><code>RuntimeError: a leaf Variable that requires grad is being used in an in-place operation.</code> — the cleanest crash of the three</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout deeper">
+        <span class="tag">Deeper understanding</span>
+        <p>Same architecture, same data, same forward-pass code. The only difference between "converges cleanly," "oscillates," and "explodes to infinity" is a handful of lines governing shape, grad-tracking, and one hyperparameter. This is most of what debugging a real training run actually looks like.</p>
+      </div>
+
+      <table>
+        <thead><tr><th>Symptom in the wild</th><th>Check first</th></tr></thead>
+        <tbody>
+          <tr><td>Loss is <code>nan</code> after 3 steps</td><td>Learning rate and grad passport (Bug B pattern)</td></tr>
+          <tr><td>Loss decreases but oscillates instead of settling</td><td><code>zero_grad()</code> (Bug A pattern)</td></tr>
+          <tr><td>Training crashes immediately with an in-place-operation error</td><td>What's inside vs. outside <code>no_grad()</code> (Bug C pattern)</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <div class="quiz" id="quiz2">
+      <div class="quiz-kicker">Check your understanding</div>
+      <h4>Shapes, dtypes, and devices all check out, but the loss becomes <code>inf</code> within the first few steps and never recovers. Most likely cause?</h4>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="true">The learning rate is too high, so each update overshoots and diverges</button>
+        <button class="quiz-opt">The loss function has a shape mismatch silently broadcasting</button>
+        <button class="quiz-opt">requires_grad=True was never set on the trainable parameters</button>
+        <button class="quiz-opt">zero_grad() was never called, so gradients accumulated silently</button>
+      </div>
+      <div class="quiz-explain">Rapid divergence to <code>inf</code> within a handful of steps — after shape, dtype, and device are already ruled out — is the signature of a learning rate that's too large: each update overshoots the minimum by more than the previous step, exactly like Bug B. A missing <code>requires_grad</code> would prevent learning entirely (never explode); a missing <code>zero_grad()</code> produces oscillation and gradual drift, not a fast blow-up.</div>
+    </div>
+
+    <section id="framework">
+      <h2>The Dataset, and the Framework Automating the Loop</h2>
+      <p>The data for the rest of this module: 1,400 short texts labeled human-written or AI-generated, evenly split.</p>
+      <div class="chart-wrap">
+        <div class="chart-title">Label distribution</div>
+        <svg viewBox="0 0 300 140" style="width:100%; max-width:300px; display:block; margin:0 auto;" role="img" aria-label="700 human-labeled texts and 700 AI-labeled texts.">
+          <g font-size="12">
+            <rect x="40" y="20" width="70" height="90" rx="6" fill="#d9a61e"/>
+            <rect x="160" y="20" width="70" height="90" rx="6" fill="#c62e2e"/>
+            <text x="75" y="65" text-anchor="middle" font-weight="800" fill="#3f0a0a" font-size="15">700</text>
+            <text x="195" y="65" text-anchor="middle" font-weight="800" fill="#fff" font-size="15">700</text>
+            <text x="75" y="126" text-anchor="middle" class="bar-label">Human (0)</text>
+            <text x="195" y="126" text-anchor="middle" class="bar-label">AI (1)</text>
+          </g>
+        </svg>
+      </div>
+      <p>Besides the raw <code>text_content</code>, the dataset carries 13 computed writing-style columns — reading-ease scores, sentence-length variation, grammar-error counts, and more — that come back into play later in this module.</p>
+
+      <h3>Hand-written vs. automated</h3>
+      <p>Same four passports underneath — shape, dtype, device, grad — just automated:</p>
+      <div class="code-compare">
+        <div>
+          <div class="cc-label">Hand-written</div>
+          <div class="code-block" style="margin-top:0;">for epoch in range(epochs):
+    y_pred = w * x + b
+    loss = ((y_pred-y)**2).mean()
+    loss.backward()
+    with torch.no_grad():
+        w -= lr * w.grad
+        b -= lr * b.grad
+        w.grad.zero_(); b.grad.zero_()</div>
+        </div>
+        <div>
+          <div class="cc-label">Framework version</div>
+          <div class="code-block" style="margin-top:0;">for xb, yb in train_loader:
+    pred = model(xb)
+    loss = criterion(pred, yb)
+    optimizer.zero_grad()
+    loss.backward()
+    optimizer.step()</div>
+        </div>
+      </div>
+      <p><code>DataLoader</code> replaces manual batching; <code>model(xb)</code> replaces <code>w*x+b</code>; <code>optimizer.zero_grad()</code>/<code>.step()</code> replace the manual <code>.grad.zero_()</code>/<code>w -= lr*w.grad</code> block. What didn't change: <code>loss.backward()</code> is identical — autograd doesn't care whether it's called inside a framework or by hand.</p>
+    </section>
+
+    <section id="text">
+      <h2>From Text to Tensors</h2>
+      <p>The framework can automate the loop, but it still needs numbers to loop over. A neural network only understands numbers, so text goes through three steps, in order.</p>
+
+      <div class="pipeline">
+        <div class="pstep"><div class="pt">1. Tokenize</div><div class="pv">word → id</div></div>
+        <span class="parr">→</span>
+        <div class="pstep"><div class="pt">2. Pad</div><div class="pv">fixed length</div></div>
+        <span class="parr">→</span>
+        <div class="pstep"><div class="pt">3. Embed</div><div class="pv">id → vector</div></div>
+      </div>
+
+      <p><b>Tokenizing</b> gives every word a number, so <code>"the mouse ran"</code> becomes <code>[5, 23, 11]</code>. <b>Padding</b> makes every example the same length for batching — filler zeros for short sequences, truncation for long ones. <b>Embedding</b> turns each id into a small list of learned values capturing how that word tends to be used — the same lookup-table idea as the linear layer, just applied to words: <code>nn.Embedding</code> turns a <code>(B, T)</code> integer tensor into a <code>(B, T, D)</code> float tensor.</p>
+
+      <div class="callout deeper">
+        <span class="tag">Out-of-vocabulary (OOV)</span>
+        <p>Real text always contains words a tokenizer has never seen. Rather than crashing, every unknown word gets the <em>same</em> shared placeholder id — the standard term is <b>OOV</b>. The idea: "we don't recognize this word, so mark it unknown."</p>
+      </div>
+
+      <div class="output-block">Vocabulary size: 351
+Padded shape: (1120, 200)   <- (batch, sequence_length)
+
+Example text : The music industry perhaps alters momentum, in fact basically it's gre
+Tokenized    : [3, 154, 10, 254, 22, 57, 4, 50, 239, 9, 1]</div>
+
+      <div class="callout misconception">
+        <span class="tag">Common misconception</span>
+        <p>"The vocabulary just grows to fit new words." It doesn't — <code>fit_on_texts</code> only ever runs on training data. Anything new at test time is OOV by construction. The tokenizer's vocabulary is a fixed passport, decided once, at training time.</p>
+      </div>
+
+      <div class="output-block">Input  (token ids) shape: (4, 200)   dtype: torch.int64
+Output (embeddings) shape: (4, 200, 128)   dtype: torch.float32
+
+Embedding matrix shape: (10000, 128)  (10,000 x 128 = 1,280,000 parameters)</div>
+
+      <div class="callout industry">
+        <span class="tag">In practice</span>
+        <p>The embedding matrix here is 10,000 × 128 = 1,280,000 parameters — more than the rest of a small model combined. Vocabulary size is a deliberate engineering choice, not a default to leave untouched.</p>
+      </div>
+    </section>
+
+    <div class="quiz" id="quiz3">
+      <div class="quiz-kicker">Check your understanding</div>
+      <h4>A tokenizer fit on training text only meets the word "unprecedented" at test time, never seen before. What happens?</h4>
+      <div class="quiz-options">
+        <button class="quiz-opt">It raises a KeyError, since the word was never added to the vocabulary</button>
+        <button class="quiz-opt">It's silently dropped, shortening the sentence by one token</button>
+        <button class="quiz-opt">It gets a new unique id on the fly, extending the vocabulary</button>
+        <button class="quiz-opt" data-correct="true">It's mapped to the reserved OOV token id, used for every other unseen word too</button>
+      </div>
+      <div class="quiz-explain"><code>texts_to_sequences</code> looks up every word and falls back to the OOV id whenever a word isn't found — every never-seen word collapses to that same single id. The sequence length is preserved: OOV words still take up a position. The vocabulary is frozen the moment <code>fit_on_texts</code> finishes.</div>
+    </div>
+
+    <section id="pooling">
+      <h2>A Real <code>nn.Module</code>: Flatten vs. Global Average Pooling</h2>
+      <p>The embedding layer outputs <code>(batch, 200, 128)</code> float tensors. A classifier needs one prediction per sample, so that middle dimension has to collapse — there are two very different ways to do it, and the difference is a parameter-count decision made in every text or sequence model.</p>
+
+      <table>
+        <thead><tr><th>Approach</th><th>What it does</th><th>Linear layer needs</th></tr></thead>
+        <tbody>
+          <tr><td><b>Flatten</b></td><td>Keep every value; reshape (200, 128) into one long vector</td><td>25,600 inputs</td></tr>
+          <tr><td><b>Global Average Pooling (GAP)</b></td><td>Average across the 200 token positions</td><td>128 inputs</td></tr>
+        </tbody>
+      </table>
+
+      <div class="chart-wrap">
+        <div class="chart-title">Input features required, by approach</div>
+        <div class="chart-sub">200× fewer inputs with Global Average Pooling.</div>
+        <svg viewBox="0 0 560 120" style="width:100%; display:block;" role="img" aria-label="Flatten needs 25600 input features; Global Average Pooling needs 128.">
+          <g font-size="12">
+            <text x="90" y="34" text-anchor="end" class="bar-label">Flatten</text>
+            <rect x="100" y="20" width="420" height="28" rx="5" fill="#dc4444"/>
+            <text x="526" y="39" class="bar-value">25,600</text>
+            <text x="90" y="84" text-anchor="end" class="bar-label">GAP (mean)</text>
+            <rect x="100" y="70" width="3" height="28" rx="2" fill="#d9a61e"/>
+            <text x="110" y="89" class="bar-value">128</text>
+          </g>
+        </svg>
+      </div>
+
+      <div class="callout deeper">
+        <span class="tag">The trade-off</span>
+        <p>Flatten keeps <em>positional</em> information — word 5 stays distinguishable from word 150. GAP throws position away entirely and keeps only "what showed up, on average." Neither is strictly better: it's a trade-off between preserving structure and controlling parameter count.</p>
+      </div>
+
+      <h3>BasicModel: Embedding → Flatten → Linear → ReLU → Linear → Sigmoid</h3>
+      <div class="model-arch">
+        <div class="arch-layer" style="background:var(--yellow-50);">Embedding(10000, 128, padding_idx=0)<span class="shape-tag">→ (B,200,128)</span></div>
+        <div class="arch-layer" style="background:var(--yellow-50);">Flatten<span class="shape-tag">→ (B,25600)</span></div>
+        <div class="arch-layer" style="background:var(--red-50);">Linear(25600 → 64) + ReLU<span class="shape-tag">→ (B,64)</span></div>
+        <div class="arch-layer" style="background:var(--red-50);">Linear(64 → 1) + Sigmoid<span class="shape-tag">→ (B,1)</span></div>
+      </div>
+      <p style="text-align:center; color:var(--muted); font-size:.9rem;">Total parameters: <b style="color:var(--red-800);">2,918,529</b></p>
+
+      <div class="interview">
+        <div class="q">Interview question: the Linear(25600, 64) layer alone has 1.6M parameters. Replacing Flatten with GAP cuts that down — what's lost?</div>
+        <div class="a"><div class="a-inner">
+          <div class="strong"><b>Strong answer:</b> Position. Flatten preserves <em>where</em> in the sequence something happened; GAP preserves only <em>whether</em> it happened, averaged across the sequence. For tasks where order matters ("not good" vs. "good, not"), that loss can hurt accuracy; for tasks driven mostly by which words appear at all, GAP's efficiency usually wins.</div>
+        </div></div>
+      </div>
+
+      <h3>Training BasicModel</h3>
+      <p>With the automated loop — a data loader, the module, <code>optimizer.step()</code> — nothing hand-written:</p>
+      <div class="chart-wrap">
+        <div class="chart-title">Train vs. validation accuracy, 10 epochs</div>
+        <svg viewBox="0 0 440 170" style="width:100%; max-width:440px; display:block;" role="img" aria-label="Train accuracy climbs from 0.69 to 1.00 over 10 epochs; validation accuracy rises then plateaus around 0.85.">
+          <g transform="translate(34,10)">
+            <line x1="0" y1="0" x2="0" y2="140" class="axis-line"/>
+            <line x1="0" y1="140" x2="380" y2="140" class="axis-line"/>
+            <text x="-6" y="4" text-anchor="end" class="bar-label">1.0</text>
+            <text x="-6" y="144" text-anchor="end" class="bar-label">0.0</text>
+            <polyline points="0,46.9 42.2,15.9 84.4,4.9 126.7,2.3 168.9,0.9 211.1,0.5 253.3,0 295.6,0 337.8,0 380,0" fill="none" stroke="#8d1c1c" stroke-width="2.2"/>
+            <polyline points="0,31.9 42.2,23.7 84.4,20.6 126.7,21.3 168.9,21.3 211.1,20.6 253.3,20.6 295.6,20.6 337.8,20.0 380,20.6" fill="none" stroke="#d9a61e" stroke-width="2.2" stroke-dasharray="5,3"/>
+          </g>
+          <text x="400" y="35" font-size="11" fill="#8d1c1c" font-weight="700">train</text>
+          <text x="400" y="55" font-size="11" fill="#b9870b" font-weight="700">val</text>
+        </svg>
+        <div class="chart-sub">Train accuracy reaches 1.0000 by epoch 7; validation accuracy settles around 0.85 — the gap that the next read picks up.</div>
+      </div>
+    </section>
+
+    <div class="quiz" id="quiz4">
+      <div class="quiz-kicker">Check your understanding</div>
+      <h4>Embedding output is <code>(batch, 200, 128)</code>. Model A applies Flatten; Model B applies <code>x.mean(dim=1)</code> (GAP). Which statement is correct?</h4>
+      <div class="quiz-options">
+        <button class="quiz-opt">Both need the same number of input features</button>
+        <button class="quiz-opt" data-correct="true">Flatten needs 25,600 input features; GAP needs only 128</button>
+        <button class="quiz-opt">Flatten needs 128 input features, pooling needs 25,600</button>
+        <button class="quiz-opt">GAP needs 200 input features, one per token position</button>
+      </div>
+      <div class="quiz-explain">Flatten reshapes (200, 128) into one 25,600-length vector (200 × 128), keeping every value; GAP averages <em>across</em> the 200 positions, collapsing to just 128 values. The 200 positions get averaged away — not preserved as a size-200 output.</div>
+    </div>
+
+    <section id="recap">
+      <div class="divider"></div>
+      <h2>Recap: the Four Passports, in Action</h2>
+      <table>
+        <thead><tr><th>Passport</th><th>Fails as...</th><th>Today's example</th></tr></thead>
+        <tbody>
+          <tr><td><b>Shape</b></td><td>Crash, or a broadcast that silently computes the wrong thing</td><td>The (N,1) vs (N,) loss bug</td></tr>
+          <tr><td><b>Dtype</b></td><td>Crash, or precision/memory blowing up</td><td><code>torch.mean()</code> on a long tensor; 7B-model memory</td></tr>
+          <tr><td><b>Device</b></td><td>Crash, or a silent slowdown</td><td><code>.to('cuda')</code> mismatches; unsynced GPU timing</td></tr>
+          <tr><td><b>Grad</b></td><td>Doesn't learn, accumulates unexpectedly, or crashes on update</td><td>No <code>zero_grad()</code>; update outside <code>no_grad()</code></td></tr>
+        </tbody>
+      </table>
+
+      <ul class="takeaway-list">
+        <li><b>Device is explicit, always.</b> PyTorch never moves a tensor for you.</li>
+        <li><b>Benchmark honestly.</b> Warm-up runs and <code>synchronize()</code> are not optional on GPU.</li>
+        <li><b>A hand-written loop and a framework loop are the same four passports</b> — the framework just automates the bookkeeping.</li>
+        <li><b>A tokenizer's vocabulary is frozen at training time</b> — anything new at test time is OOV by construction.</li>
+        <li><b>Flatten vs. GAP is a real trade-off</b> between preserving position and controlling parameter count — not a default to leave unexamined.</li>
+      </ul>
+      <p style="color:var(--muted); font-size:.95rem;">A model has now trained and printed accuracy numbers — without yet asking whether those numbers mean anything. That's the question the next read takes on.</p>
+    </section>
+  </div>
+</main>
+
+<footer>
+  <div class="foot-title">Neural Network 4 post read</div>
+  <div>Thinking in Tensors, Part 2 — Devices, the Training Loop, and Automating It</div>
+</footer>
+
+<script>
+  const bar = document.getElementById('progressBar');
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    bar.style.width = (h.scrollTop / (h.scrollHeight - h.clientHeight) * 100) + '%';
+  });
+  const tocBtn = document.getElementById('tocBtn');
+  const tocPanel = document.getElementById('tocPanel');
+  tocBtn.addEventListener('click', () => {
+    const open = tocPanel.classList.toggle('open');
+    tocBtn.setAttribute('aria-expanded', open);
+  });
+  document.addEventListener('click', (e) => {
+    if (!tocPanel.contains(e.target) && e.target !== tocBtn && tocPanel.classList.contains('open')) {
+      tocPanel.classList.remove('open'); tocBtn.setAttribute('aria-expanded', false);
+    }
+  });
+  tocPanel.querySelectorAll('a').forEach(a => a.addEventListener('click', () => tocPanel.classList.remove('open')));
+  document.querySelectorAll('.interview .q').forEach(q => {
+    q.addEventListener('click', () => q.parentElement.classList.toggle('open'));
+  });
+  document.querySelectorAll('.quiz').forEach(quiz => {
+    const opts = quiz.querySelectorAll('.quiz-opt');
+    const explain = quiz.querySelector('.quiz-explain');
+    opts.forEach(opt => {
+      opt.addEventListener('click', () => {
+        if (quiz.dataset.answered) return;
+        quiz.dataset.answered = 'true';
+        opts.forEach(o => {
+          o.disabled = true;
+          if (o.dataset.correct === 'true') o.classList.add('correct');
+          else if (o === opt) o.classList.add('incorrect');
+        });
+        explain.classList.add('show');
+      });
+    });
+  });
+</script>
+</body>
+</html>
